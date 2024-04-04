@@ -30,21 +30,25 @@ const transporter = nodemailer.createTransport({
 
 app.post('/api/send_email', async (req, res) => {
 
-  const { Subject, Message, email } = req.body;
+  const { Subject, driverName, Notes, fileUrl } = req.body;
   console.log(req.body);
   try {
-    if (!Message || !Message) {
-      return res.status(400).json({ message: "Invalid Email Body Parameters" })
-    }
+    
 
     const mailOptions = {
       from: '"hampton" <Delivery.note@hampton.co.uk>',
-      to: email,
+      to: "Delivery.note@hampton.co.uk",
       subject: Subject,
       html: ` 
-    <p>${Message}</p>
-   `
+          <ul>
+              <li><strong>Drive Name:</strong> ${driverName}</li>
+              <li><strong>Notes:</strong> ${Notes}</li>
+              <li><img src="${fileUrl}" alt="Attached Image" style="max-width: 100%; height: auto;" /></li>
+              <li><a href="${fileUrl}" target="_blank">Open File Externally</a></li>
+          </ul>
+      `
     };
+
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Message Sent status: " + info.messageId);
