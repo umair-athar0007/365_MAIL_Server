@@ -4,22 +4,33 @@ const dotenv = require("dotenv");
 dotenv.config();
 const bodyParser = require('body-parser');
 const nodemailer = require("nodemailer");
-const PORT = process.env.PORT | 9000;
+const PORT = process.env.PORT || 9000;
+const rateLimit = require("express-rate-limit"); // Rate limiting for spam prevention
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
+// Rate limit to prevent excessive email sending (adjust limits as needed)
+const emailRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: 5, // Limit to 5 emails per 15 minutes
+  message: "Too many emails sent, please try again later.",
+});
+app.use("/api/send_email", emailRateLimiter); // Apply rate limiting to /api/send_email
 
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
+  host: process.env.Email_Host,
   port: 587,
   secure: false,
+  // tls: {
+  //   ciphers: 'SSLv3'
+  // },
   auth: {
-    user: "Delivery.note@hampton.co.uk",
-    pass: "Deliveries769?!%"
+    user: process.env.Email_User,
+    pass: process.env.Email_Pass
   }
 
 });
@@ -33,7 +44,7 @@ app.post('/api/send_email', async (req, res) => {
   const { Subject, driverName, Notes, fileUrl } = req.body;
   console.log(req.body);
   try {
-    
+
 
     const mailOptions = {
       from: '"hampton" <Delivery.note@hampton.co.uk>',
@@ -52,11 +63,11 @@ app.post('/api/send_email', async (req, res) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Message Sent status: " + info.messageId);
-    res.status(200).json({ message: 'Email Senf Successfully' });
+    res.status(200).json({ message: 'Email Sent Successfully',  });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to Send Email' });
+    res.status(500).json({ message: 'Failed to Send Email', error: error.message});
   }
 });
 
