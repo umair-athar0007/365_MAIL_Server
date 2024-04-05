@@ -47,8 +47,8 @@ app.post('/api/send_email', async (req, res) => {
 
 
     const mailOptions = {
-      from: '"hampton" <Delivery.note@hampton.co.uk>',
-      to: "Delivery.note@hampton.co.uk",
+      // from: '"hampton" <Delivery.note@hampton.co.uk>',
+      // to: "Delivery.note@hampton.co.uk",
       subject: Subject,
       html: ` 
           <ul>
